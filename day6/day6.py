@@ -30,3 +30,12 @@ for t,d in races:
     sum*=(math.floor(result[0].real)-math.ceil(result[1].real)+1)
 
 print(f'final: {sum}')
+
+concat_time=''
+concat_distance=''
+for t,d in races:
+    concat_time+=str(t)
+    concat_distance+=str(d)
+
+result = distance_from_time(int(concat_distance),int(concat_time)) 
+print(math.floor(result[0].real)-math.ceil(result[1].real)+1)
