@@ -8,33 +8,8 @@ from PIL import Image
 
 os.chdir(os.path.abspath(os.path.dirname(__file__)))
 
-'''right = {'J':'up','-':'right','7':'down'}
-left = {'F':'down','L':'up','-':'left'}
-up = {'|':'up','7':'left','F':'right'}
-down = {'L':'right','|':'down','J':'left'}
-'''
-
 def draw_map(y_3d):
-
-    # Create a sample 2D NumPy array
     array_2d = y_3d[:,:,1]
-    '''
-    width, height = 512, 512
-    gradient = np.zeros((height // 3, width // 3), dtype=np.uint8)
-
-    for i in range(width // 3):
-        for j in range(height // 3):
-            gradient[j, i] = (i * 3 + j * 3) % 256
-
-    # Step 2: Create a Pillow Image object from the NumPy array
-    image_data = np.repeat(np.repeat(gradient, 3, axis=1), 3, axis=0)
-    image = Image.fromarray(image_data.astype('uint8'), 'L')
-    # Step 3: Display the image using the default viewer
-    image.show('title')
-    # Step 1: Create a 2D NumPy array
-    # For demonstration purposes, you can create a simple array or load an existing image as a NumPy array.
-    # In this example, let's create a gradient array.
-    '''
     color_map = {'X':140,'1':70,'0':210,'':255}
 
     tiles = {'J':[[140,0,140],[0,0,140],[140,140,140]],
@@ -63,14 +38,7 @@ def draw_map(y_3d):
 
     # Step 3: Display or save the image
     image.show('title')  # Display the image using the default viewer
-    a=input()
-    if a == 'exit':
-        exit()
 
-
-
-
-# in = 1 = mörk färg
 right = {'J':{'go':'up','in':[],'out':['right','down']},
          '-':{'go':'right','in':['up'],'out':['down']},
          '7':{'go':'down','in':['up','right'],'out':[]}}
@@ -145,14 +113,33 @@ def traverse(map, position, direction):
     
     return position, text_dir
 
+
+
+def fill_empty_neighbours(map,target_tile):
+    '''
+    makes the target_tile grow on all adjecent tiles until
+    it can grow no more.
+    '''
+    def grow(map,center,target_tile):
+        for x in range(-1,2):
+            for y in range(-1,2):
+                try:
+                    if map[center[1]+y,center[0]+x,1] == '':
+                        map[center[1]+y,center[0]+x,1] = target_tile
+                        grow(map,(center[0]+x,center[1]+x),target_tile)
+                except IndexError:
+                    pass
+
+    for x in range(map.shape[1]):
+        for y in range(map.shape[0]):
+            if map[y,x,1] == target_tile:
+                grow(map,(x,y),target_tile)
+    
+
 # Read the file as a 1D array of characters
 with open('input', 'r') as file:
     lines = file.readlines()
     char_matrix = [list(line.strip()) for line in lines]
-# Reshape the 1D array into a 2D array
-# You need to specify the shape based on the size of your data
-# For example, if your file has 100 characters and you want a 10x10 array, use (10, 10)
-# Make sure the size of the array matches the size of your data
     
 test_map=np.array(char_matrix)
 y_3d = test_map[:,:,np.newaxis]
@@ -161,13 +148,14 @@ print(y_3d[:,:,0])
 position=[73,82]
 text_dir = 'left'
 result=1
+print('-- First traversal: Setting the loop path with Xs -- ')
 while(True):
     result = traverse(y_3d,position,text_dir)
     if result is None:
         break
     position , text_dir = result
 
-print('-- Setting masks of 0 and 1 --')
+print('--Second traversal: Setting masks of 0 and 1 for each side --')
 position=[73,82]
 text_dir = 'left'
 counter=0
@@ -177,16 +165,13 @@ while(True):
         break
     position , text_dir = result
 
-print(counter/2)
+print(f'mid-way distance:{counter/2}')
+
+fill_empty_neighbours(y_3d,'1')
+counter=0
+for x in range(y_3d.shape[1]):
+    for y in range(y_3d.shape[0]):
+        if y_3d[y,x,1] == '1':
+            counter+=1
+print(f'bounded area: {counter}')
 draw_map(y_3d)
-# solution1:
-# find the path tile next to S 
-# move_next_neighbour(map,position)->new_position
-# ' checks tiletype to see valid moves and moves'
-# cuts a 3*3 and searches for matching.
-
-# destroys the map as it passes
-
-# follow path with 'navigation'+prev as | can mean both up and down.
-# count number of steps
-# walk path until reaching back to S again. 
