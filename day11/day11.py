@@ -27,12 +27,12 @@ with open('testinput') as f:
 
     for start in range(distance_matrix.shape[0]):
         for dest in range(distance_matrix.shape[0]):
-            if start == dest:
+            if start == dest or dest[1]<start[1]:
                 continue
             y_dist=abs(galaxies[start][0]-galaxies[dest][0])
             x_dist=abs(galaxies[start][1]-galaxies[dest][1])
 
             distance_matrix[start,dest] = y_dist+x_dist
-    a=1 
+    print(f'total sum {np.sum(distance_matrix)}')
 
 
